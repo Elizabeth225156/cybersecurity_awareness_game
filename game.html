@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Safe Clicks | Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="game-page">
+
+  <div class="game-top">
+    <a class="back" href="index.html">&larr; All games</a>
+    <h1 id="game-title">Loading...</h1>
+  </div>
+
+  <!-- p5 puts the canvas inside the first <main> on the page -->
+  <main id="stage"></main>
+
+  <p class="hint" id="game-hint"></p>
+
+  <footer class="foot">Made with p5.js</footer>
+
+  <script>
+    // Only one p5 sketch can run in global mode per page,
+    // so this page loads just the one named in the URL: game.html?game=pwd
+    var GAMES = {
+      pwd:            { title: "Passwords",                   file: "pwd.js",            hint: "Use your mouse and keyboard." },
+      mja:            { title: "Multi-Factor Authentication", file: "mja.js",            hint: "Click the buttons and type on your keyboard. Enter works too." },
+      reportScams:    { title: "Report Scams",                file: "reportScams.js",    hint: "Use your mouse." },
+      patchTheSystem: { title: "Patch the System",            file: "patchTheSystem.js", hint: "Use your mouse." }
+    };
+
+    var id = new URLSearchParams(location.search).get("game");
+    var game = GAMES[id];
+    var titleEl = document.getElementById("game-title");
+
+    if (!game) {
+      titleEl.textContent = "Game not found";
+      document.getElementById("stage").innerHTML =
+        '<p class="hint">Pick one from the <a href="index.html">game list</a>.</p>';
+    } else {
+      titleEl.textContent = game.title;
+      document.title = game.title + " | Safe Clicks";
+      document.getElementById("game-hint").textContent = game.hint;
+
+      // Load the sketch first, then p5, so p5 sees setup() and draw() when it starts
+      var sketch = document.createElement("script");
+      sketch.src = game.file;
+      sketch.onload = function () {
+        var p5lib = document.createElement("script");
+        p5lib.src = "https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js";
+        document.body.appendChild(p5lib);
+      };
+      sketch.onerror = function () {
+        titleEl.textContent = game.title;
+        document.getElementById("stage").innerHTML =
+          '<p class="hint">Could not find ' + game.file + '. Check that it is in the same folder as this page.</p>';
+      };
+      document.body.appendChild(sketch);
+    }
+  </script>
+</body>
+</html>
